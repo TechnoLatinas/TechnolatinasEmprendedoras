@@ -7,6 +7,9 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 df = conn.read()
 
+# Add logo
+st.image("imgs/logo.png", width=200)
+
 # # Print results.
 # for row in df.itertuples():
 #     st.write(f"{row.Nombre} lidera :{row.Emprendimiento}:")
@@ -14,14 +17,20 @@ df = conn.read()
 df = conn.read()
 
 # Add title
-st.title("Business Directory")
+st.title("Directorio de TechnoLatinas Emprendedoras")
 
 # Sidebar filters
-st.sidebar.header("Filter Businesses")
+st.sidebar.header("Filtrar Emprendimientos")
 
 # Dropdowns for filtering based on available fields
-country_filter = st.sidebar.selectbox("Select Country", options=["All"] + df["Country"].unique().tolist())
-area_filter = st.sidebar.selectbox("Select Area", options=["All"] + df["Area"].unique().tolist())
+country_filter = st.sidebar.selectbox("Selecciona País", options=["All"] + df["Country"].unique().tolist())
+state_filter = st.sidebar.selectbox("Selecciona Región", options=["All"] + df["State"].unique().tolist())
+area_filter = st.sidebar.selectbox("Selecciona Rubro", options=["All"] + df["Area"].unique().tolist())
+
+# Slider for filtering by cost
+min_cost = int(df["Costo"].min())
+max_cost = int(df["Costo"].max())
+cost_range = st.sidebar.slider("Select Cost Range", min_cost, max_cost, (min_cost, max_cost))
 
 # Filter the data based on the selections
 filtered_df = df.copy()
@@ -29,8 +38,14 @@ filtered_df = df.copy()
 if country_filter != "All":
     filtered_df = filtered_df[filtered_df["Country"] == country_filter]
 
+if state_filter != "All":
+    filtered_df = filtered_df[filtered_df["State"] == state_filter]
+
 if area_filter != "All":
     filtered_df = filtered_df[filtered_df["Area"] == area_filter]
+
+# Apply cost filter
+filtered_df = filtered_df[(filtered_df["Costo"] >= cost_range[0]) & (filtered_df["Costo"] <= cost_range[1])]
 
 # Display filtered results
 for _, row in filtered_df.iterrows():
@@ -46,3 +61,4 @@ for _, row in filtered_df.iterrows():
         st.write(f"[Visit Website]({row['PaginaWeb']})")
     
     st.markdown("---")
+    #st.markdown(slider_style, unsafe_allow_html=True)
